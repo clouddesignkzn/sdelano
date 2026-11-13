@@ -1,0 +1,20 @@
+# Окружение и зависимости
+.venv/
+venv/
+__pycache__/
+*.pyc
+node_modules/
+
+# Личные настройки и данные работающего сервера
+local_config.bat
+data/
+
+# Результаты тестов
+tests/screenshots/
+
+# Системный мусор
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+*.tmp
