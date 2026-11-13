@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <!--
+    Политика безопасности дублируется здесь, чтобы страница была защищена на любом хостинге.
+    Полный набор заголовков (frame-ancestors, HSTS и др.) отдаёт сервер: server/security.py.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; manifest-src 'self'; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types sdelano-sw">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f4f2ec" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0d0d12" media="(prefers-color-scheme: dark)">
+  <meta name="format-detection" content="telephone=no">
+  <title>Сделано · список задач</title>
+  <meta name="description" content="Быстрый и аккуратный список задач. Работает офлайн, ничего не отправляет на сервер и не требует регистрации.">
+  <link rel="canonical" href="__PUBLIC_URL__/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:site_name" content="Сделано">
+  <meta property="og:title" content="Сделано · список задач, который не подведёт">
+  <meta property="og:description" content="Работает офлайн, данные остаются в браузере, без регистрации.">
+  <meta property="og:url" content="__PUBLIC_URL__/">
+  <meta property="og:image" content="__PUBLIC_URL__/assets/icons/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/icons/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preload" href="assets/fonts/inter-regular.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="assets/fonts/inter-display-semibold.woff" as="font" type="font/woff" crossorigin>
+  <link rel="stylesheet" href="assets/css/app.css">
+
+  <script src="assets/js/theme-init.js"></script>
+  <script type="module" src="assets/js/app.js"></script>
+  <script nomodule src="assets/js/legacy.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#composer-input">Перейти к новой задаче</a>
+
+  <div class="app">
+    <!-- ───────── Шапка ───────── -->
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Сделано, на главную">
+        <svg class="brand__mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <rect width="64" height="64" rx="18" class="brand__bg"/>
+          <path d="M45.5 21.5A17 17 0 1 0 49 32" class="brand__arc"/>
+          <path d="M23 32.5l7 7 17.5-19" class="brand__tick"/>
+        </svg>
+        <span class="brand__word">Сделано</span>
+      </a>
+
+      <div class="topbar__tools">
+        <button class="icon-btn" type="button" id="theme-button" aria-label="Тема: как в системе">
+          <svg class="theme-icon theme-icon--auto" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" class="fill"/></svg>
+          <svg class="theme-icon theme-icon--light" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg>
+          <svg class="theme-icon theme-icon--dark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+        </button>
+
+        <div class="menu" id="menu">
+          <button class="icon-btn" type="button" id="menu-button" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-list" aria-label="Ещё">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="5" cy="12" r="1.6" class="fill"/><circle cx="12" cy="12" r="1.6" class="fill"/><circle cx="19" cy="12" r="1.6" class="fill"/></svg>
+          </button>
+          <div class="menu__list" id="menu-list" role="menu" aria-label="Дополнительно" hidden>
+            <button class="menu__item" type="button" role="menuitem" data-action="export">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 19h14"/></svg>
+              <span>Сохранить копию в файл</span>
+            </button>
+            <button class="menu__item" type="button" role="menuitem" data-action="import">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20V9m0 0-4 4m4-4 4 4M5 5h14"/></svg>
+              <span>Загрузить из файла</span>
+            </button>
+            <button class="menu__item" type="button" role="menuitem" data-action="keys">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M7 10h.01M11 10h.01M15 10h.01M8 14h8"/></svg>
+              <span>Горячие клавиши</span>
+              <kbd class="menu__kbd">?</kbd>
+            </button>
+          </div>
+          <input type="file" id="import-input" accept="application/json,.json" hidden>
+        </div>
+      </div>
+    </header>
+
+    <div class="notice" id="storage-notice" role="status" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 9v4m0 4h.01M10.3 3.9 2.4 17.6A2 2 0 0 0 4.1 20.6h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+      <p><strong>Сохранение недоступно.</strong> Браузер запретил локальное хранилище (например, в приватном режиме). Задачи проживут, пока открыта вкладка.</p>
+    </div>
+
+    <!-- ───────── Приветствие ───────── -->
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="hero__date" id="today"></p>
+      <h1 class="hero__title" id="hero-title">
+        <span id="greeting">Привет</span><span class="hero__comma">,</span>
+        <span class="hero__accent" id="hero-sub">что сделаем сегодня?</span>
+      </h1>
+    </section>
+
+    <!-- ───────── Боковая панель: прогресс и фильтры ───────── -->
+    <aside class="side" aria-label="Обзор">
+      <div class="progress" id="progress">
+        <svg class="ring" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+          <circle class="ring__track" cx="60" cy="60" r="52"/>
+          <circle class="ring__value" id="ring-value" cx="60" cy="60" r="52" pathLength="100"/>
+        </svg>
+        <div class="progress__center" aria-hidden="true"><span id="ring-percent">0</span><small>%</small></div>
+        <div class="progress__text">
+          <p class="progress__label">Выполнено</p>
+          <p class="progress__score"><span id="stat-done">0</span> из <span id="stat-total">0</span></p>
+          <p class="progress__note" id="progress-note">Начните с первой задачи.</p>
+        </div>
+        <p class="visually-hidden" id="progress-sr" role="status"></p>
+      </div>
+
+      <nav class="nav" aria-label="Фильтр задач">
+        <button class="nav__item" type="button" data-filter="all" aria-pressed="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>
+          <span class="nav__label">Все</span><span class="nav__count" data-count="all">0</span>
+        </button>
+        <button class="nav__item" type="button" data-filter="active" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/></svg>
+          <span class="nav__label">В работе</span><span class="nav__count" data-count="active">0</span>
+        </button>
+        <button class="nav__item" type="button" data-filter="important" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>
+          <span class="nav__label">Важные</span><span class="nav__count" data-count="important">0</span>
+        </button>
+        <button class="nav__item" type="button" data-filter="done" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.2 2.4 2.4 4.8-5.1"/></svg>
+          <span class="nav__label">Готово</span><span class="nav__count" data-count="done">0</span>
+        </button>
+      </nav>
+
+      <p class="side__hint">Нажмите <kbd>?</kbd>, чтобы увидеть горячие клавиши</p>
+    </aside>
+
+    <!-- ───────── Основная часть ───────── -->
+    <main class="main" id="main">
+      <form class="composer" id="composer" novalidate autocomplete="off">
+        <label class="visually-hidden" for="composer-input">Новая задача</label>
+        <div class="composer__field">
+          <button class="composer__star" type="button" id="composer-star" aria-pressed="false" aria-label="Отметить новую задачу как важную">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>
+          </button>
+          <input class="composer__input" id="composer-input" name="task" type="text" enterkeyhint="done"
+                 placeholder="Новая задача" maxlength="600" spellcheck="true"
+                 aria-describedby="composer-help composer-error">
+          <button class="btn btn--primary composer__submit" type="submit" id="composer-submit">
+            <span class="composer__submit-text">Добавить</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+        <div class="composer__meta">
+          <p id="composer-help">Enter, чтобы добавить <span class="composer__help-star">· звезда отмечает важное</span></p>
+          <p class="composer__counter" id="composer-counter" hidden></p>
+        </div>
+        <p class="composer__error" id="composer-error" role="alert"></p>
+      </form>
+
+      <section class="board" aria-labelledby="board-title">
+        <div class="board__bar">
+          <h2 class="board__title" id="board-title">Все задачи</h2>
+          <div class="search">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+            <label class="visually-hidden" for="search-input">Поиск по задачам</label>
+            <input class="search__input" id="search-input" type="search" placeholder="Поиск" maxlength="100" enterkeyhint="search" autocomplete="off">
+            <kbd class="search__kbd" aria-hidden="true">/</kbd>
+          </div>
+        </div>
+
+        <ul class="tasks" id="task-list" aria-labelledby="board-title"></ul>
+
+        <div class="empty" id="empty" hidden>
+          <svg class="empty__art" viewBox="0 0 160 120" aria-hidden="true" focusable="false">
+            <rect x="26" y="18" width="108" height="84" rx="18" class="empty__card"/>
+            <rect x="44" y="40" width="16" height="16" rx="8" class="empty__dot"/>
+            <rect x="68" y="44" width="48" height="8" rx="4" class="empty__line"/>
+            <rect x="44" y="66" width="16" height="16" rx="8" class="empty__dot empty__dot--muted"/>
+            <rect x="68" y="70" width="34" height="8" rx="4" class="empty__line empty__line--muted"/>
+            <path d="m47.5 48 3 3 6-6.5" class="empty__tick"/>
+          </svg>
+          <p class="empty__title" id="empty-title">Здесь пока пусто</p>
+          <p class="empty__text" id="empty-text">Запишите первую задачу. Она сохранится, даже если закрыть вкладку.</p>
+        </div>
+
+        <div class="board__foot" id="board-foot" hidden>
+          <p id="left-count"></p>
+          <button class="text-btn" type="button" id="clear-done">Очистить выполненные</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Задачи хранятся только в этом браузере. Ни серверов, ни cookies, ни трекеров.</p>
+      <p class="footer__muted">Сделано · <span id="app-version">2.0</span></p>
+    </footer>
+  </div>
+
+  <!-- Уведомления -->
+  <div class="toast-region" aria-live="polite" aria-atomic="true">
+    <div class="toast" id="toast" hidden>
+      <p class="toast__text" id="toast-text"></p>
+      <button class="toast__action" type="button" id="toast-action" hidden>Отменить</button>
+      <button class="toast__close" type="button" id="toast-close" aria-label="Закрыть уведомление">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+  </div>
+  <p class="visually-hidden" id="sr-status" role="status"></p>
+
+  <!-- Импорт -->
+  <dialog class="dialog" id="import-dialog" aria-labelledby="import-title" aria-describedby="import-text">
+    <form method="dialog" class="dialog__body">
+      <h2 class="dialog__title" id="import-title">Загрузить задачи из файла</h2>
+      <p class="dialog__text" id="import-text"></p>
+      <div class="dialog__actions">
+        <button class="btn btn--ghost" value="cancel" type="submit">Отмена</button>
+        <button class="btn btn--soft" value="replace" type="submit">Заменить список</button>
+        <button class="btn btn--primary" value="merge" type="submit" autofocus>Добавить к текущим</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Горячие клавиши -->
+  <dialog class="dialog" id="keys-dialog" aria-labelledby="keys-title">
+    <form method="dialog" class="dialog__body">
+      <h2 class="dialog__title" id="keys-title">Горячие клавиши</h2>
+      <dl class="keys">
+        <div><dt><kbd>N</kbd></dt><dd>Новая задача</dd></div>
+        <div><dt><kbd>/</kbd></dt><dd>Поиск</dd></div>
+        <div><dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></dt><dd>Все, в работе, важные, готово</dd></div>
+        <div><dt><kbd>↑</kbd> <kbd>↓</kbd></dt><dd>Переход между задачами</dd></div>
+        <div><dt><kbd>Пробел</kbd></dt><dd>Отметить выполненной</dd></div>
+        <div><dt><kbd>E</kbd></dt><dd>Изменить текст</dd></div>
+        <div><dt><kbd>S</kbd></dt><dd>Важная или обычная</dd></div>
+        <div><dt><kbd>Delete</kbd></dt><dd>Удалить задачу</dd></div>
+        <div><dt><kbd>Ctrl</kbd> <kbd>Z</kbd></dt><dd>Отменить последнее действие</dd></div>
+        <div><dt><kbd>Esc</kbd></dt><dd>Сбросить поиск, закрыть окно</dd></div>
+      </dl>
+      <div class="dialog__actions">
+        <button class="btn btn--primary" value="close" type="submit">Понятно</button>
+      </div>
+    </form>
+  </dialog>
+
+  <template id="task-template">
+    <li class="task">
+      <div class="task__under" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false"><path d="M5 7h14M10 11v6M14 11v6M6.5 7l1 12a2 2 0 0 0 2 1.8h5a2 2 0 0 0 2-1.8l1-12M9 7V4.8A.8.8 0 0 1 9.8 4h4.4a.8.8 0 0 1 .8.8V7"/></svg>
+        <span>Удалить</span>
+      </div>
+      <div class="task__row">
+        <label class="task__check">
+          <input class="task__toggle" type="checkbox">
+          <span class="task__circle" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false"><path d="m6.5 12.5 3.6 3.6 7.4-8"/></svg>
+          </span>
+          <span class="visually-hidden task__toggle-label"></span>
+        </label>
+        <div class="task__body">
+          <p class="task__text"></p>
+          <p class="task__meta">
+            <span class="task__badge">Важное</span>
+            <span class="task__time"></span>
+          </p>
+        </div>
+        <div class="task__actions">
+          <button class="icon-btn icon-btn--sm task__star" type="button" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>
+          </button>
+          <button class="icon-btn icon-btn--sm task__edit" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20h4L18.5 9.5a2.8 2.8 0 0 0-4-4L4 16v4zM13.5 6.5l4 4"/></svg>
+          </button>
+          <button class="icon-btn icon-btn--sm icon-btn--danger task__delete" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 7h14M10 11v6M14 11v6M6.5 7l1 12a2 2 0 0 0 2 1.8h5a2 2 0 0 0 2-1.8l1-12M9 7V4.8A.8.8 0 0 1 9.8 4h4.4a.8.8 0 0 1 .8.8V7"/></svg>
+          </button>
+        </div>
+      </div>
+    </li>
+  </template>
+
+  <noscript>
+    <div class="noscript">
+      <p><strong>Нужен JavaScript.</strong> Список задач работает прямо в браузере, поэтому без JavaScript он не запустится. Включите его в настройках браузера и обновите страницу.</p>
+    </div>
+  </noscript>
+</body>
+</html>
