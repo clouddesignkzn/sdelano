@@ -1,0 +1,84 @@
+name: Проверки
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Тесты (Linux, Chrome)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Зависимости (с проверкой хешей)
+        run: python -m pip install --require-hashes --no-deps -r requirements.txt
+      - name: Тесты сервера
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+      - name: Тесты логики задач
+        run: node --test tests/store.test.mjs
+      - name: Сквозные тесты в Chrome
+        run: node tests/e2e.mjs
+        env:
+          PYTHON: python
+      - name: Запуск и остановка через launcher.py
+        run: |
+          python launcher.py check
+          python launcher.py start --no-browser
+          python launcher.py status
+          curl -fsS -H "Host: hvostdoc.online" http://127.0.0.1:47391/health
+          python launcher.py stop
+
+  windows:
+    name: Установка и запуск bat-файлами (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 01_INSTALL.bat
+        shell: cmd
+        run: call 01_INSTALL.bat < NUL
+      - name: 02_START.bat
+        shell: cmd
+        run: call 02_START.bat < NUL
+      - name: Сайт отвечает
+        shell: pwsh
+        run: |
+          $r = Invoke-RestMethod -Uri 'http://127.0.0.1:47391/health'
+          if ($r.service -ne 'sdelano') { throw 'health check failed' }
+          $page = Invoke-WebRequest -Uri 'http://127.0.0.1:47391/' -UseBasicParsing
+          if (-not $page.Headers['Content-Security-Policy']) { throw 'no CSP header' }
+      - name: 05_STATUS.bat
+        shell: cmd
+        run: call 05_STATUS.bat < NUL
+      - name: 04_RESTART.bat
+        shell: cmd
+        run: call 04_RESTART.bat < NUL
+      - name: 03_STOP.bat
+        shell: cmd
+        run: call 03_STOP.bat < NUL
+      - name: Сайт остановлен
+        shell: pwsh
+        run: |
+          try { Invoke-RestMethod -Uri 'http://127.0.0.1:47391/health' -TimeoutSec 3; throw 'still running' } catch { if ($_.Exception.Message -eq 'still running') { throw } }
